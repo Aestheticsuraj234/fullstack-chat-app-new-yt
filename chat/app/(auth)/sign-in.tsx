@@ -13,13 +13,34 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
+import { Link } from "expo-router";
+import { useAuth } from "@/contexts/auth-context";
 
 const SignInScren = () => {
+   const {signIn} = useAuth()
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>("Something went wrong");
+  const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [secureText, setSecureText] = useState(true);
+
+  const onSignIn = async()=>{
+    try {
+        if(!email || !password){
+          setError("Please fill in all fields")
+          return
+        }
+      setError(null);
+      setLoading(true)
+      const err = await signIn(email , password);
+      if(err) setError(err)
+    } catch (error) {
+      setError((error as Error).message)
+    }
+    finally{
+      setLoading(false)
+    }
+  }
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: Colors.background }}>
@@ -161,6 +182,57 @@ const SignInScren = () => {
                 color={Colors.textMuted}
               />
             </Pressable>
+          </View>
+
+          <Pressable
+          onPress={onSignIn}
+          disabled={loading}
+            style={({ pressed }) => ({
+              backgroundColor: pressed ? Colors.primaryDark : Colors.primary,
+              borderRadius: 12,
+              paddingVertical: 15,
+              alignItems: "center",
+              opacity: loading ? 0.7 : 1,
+            })}
+          >
+            {loading ? (
+              <ActivityIndicator color={"#fff"} />
+            ) : (
+              <Text
+                style={{
+                  color: "#fff",
+                  fontSize: 16,
+                  fontWeight: "700",
+                }}
+              >
+                Sign In
+              </Text>
+            )}
+          </Pressable>
+
+          <View
+            style={{
+              flexDirection: "row",
+              justifyContent: "center",
+              marginTop: 24,
+            }}
+          >
+            <Text style={{ color: Colors.textSecondary, fontSize: 14 }}>
+              Don't have an account?{" "}
+            </Text>
+            <Link href="/(auth)/sign-up" asChild>
+              <Pressable>
+                <Text
+                  style={{
+                    color: Colors.primaryLight,
+                    fontSize: 14,
+                    fontWeight: "600",
+                  }}
+                >
+                  Sign Up
+                </Text>
+              </Pressable>
+            </Link>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>

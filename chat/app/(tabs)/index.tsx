@@ -1,6 +1,8 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native'
 import React from 'react'
 import { Link } from 'expo-router';
+import { authClient } from '@/utils/auth-client';
+import { useAuth } from '@/contexts/auth-context';
 
 const HomeScreen = () => {
 
@@ -9,17 +11,15 @@ const HomeScreen = () => {
     const data = await res.text();
     console.log(data)
   }
+  const {signOut} = useAuth()
+ 
 
   return (
     <View>
-      <Text>HomeScreen</Text>
-      <Pressable style={styles.btn} onPress={pingBackend}>
-        <Text style={{color:"white"}}>Ping Backend</Text>
+      <Pressable onPress={()=>signOut()}>
+       <Text>Sign out</Text>
       </Pressable>
-      <Link href={"/(auth)/sign-in"}>
-      <Text>
-        Go to Sign in 
-        </Text></Link>
+
     </View>
   )
 }
