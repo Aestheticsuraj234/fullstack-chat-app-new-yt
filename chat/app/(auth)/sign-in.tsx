@@ -17,30 +17,29 @@ import { Link } from "expo-router";
 import { useAuth } from "@/contexts/auth-context";
 
 const SignInScren = () => {
-   const {signIn} = useAuth()
+  const { signIn } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [secureText, setSecureText] = useState(true);
 
-  const onSignIn = async()=>{
+  const onSignIn = async () => {
     try {
-        if(!email || !password){
-          setError("Please fill in all fields")
-          return
-        }
+      if (!email || !password) {
+        setError("Please fill in all fields");
+        return;
+      }
       setError(null);
-      setLoading(true)
-      const err = await signIn(email , password);
-      if(err) setError(err)
+      setLoading(true);
+      const err = await signIn(email, password);
+      if (err) setError(err);
     } catch (error) {
-      setError((error as Error).message)
+      setError((error as Error).message);
+    } finally {
+      setLoading(false);
     }
-    finally{
-      setLoading(false)
-    }
-  }
+  };
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: Colors.background }}>
@@ -185,8 +184,8 @@ const SignInScren = () => {
           </View>
 
           <Pressable
-          onPress={onSignIn}
-          disabled={loading}
+            onPress={onSignIn}
+            disabled={loading}
             style={({ pressed }) => ({
               backgroundColor: pressed ? Colors.primaryDark : Colors.primary,
               borderRadius: 12,

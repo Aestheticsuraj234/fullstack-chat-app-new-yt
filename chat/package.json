@@ -17,6 +17,7 @@
     "@react-navigation/drawer": "^7.8.1",
     "@react-navigation/elements": "^2.6.3",
     "@react-navigation/native": "^7.1.8",
+    "@tanstack/react-query": "^5.90.21",
     "better-auth": "^1.4.18",
     "expo": "~54.0.33",
     "expo-constants": "~18.0.13",
