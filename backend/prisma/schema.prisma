@@ -34,8 +34,29 @@ model User {
   friends                Friend[]        @relation("Friends1")
   friendsOf              Friend[]        @relation("Friends2")
 
+  messagesSent     Message[] @relation("MessageSent")
+  messagesReceived Message[] @relation("MessagesReceived")
+
   @@unique([email])
   @@map("user")
+}
+
+model Message {
+  id         String @id @default(cuid())
+  content    String
+  senderId   String
+  receiverId String
+
+  sender   User @relation("MessageSent", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver User @relation("MessagesReceived", fields: [receiverId], references: [id], onDelete: Cascade)
+
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([senderId])
+  @@index([receiverId])
+  @@map("message")
 }
 
 model Session {

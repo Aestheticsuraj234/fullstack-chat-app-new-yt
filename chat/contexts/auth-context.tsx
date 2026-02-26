@@ -25,29 +25,30 @@ interface AuthContextType {
 }
 
 const AuthContext = createContext<AuthContextType>({
-user: null,
+  user: null,
   token: null,
   isLoading: false,
   signIn: async () => null,
   signUp: async () => null,
-  signOut: async () => { },
-})
+  signOut: async () => {},
+});
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  
-    const {data,error, isPending} = authClient.useSession()
+  const { data, error, isPending } = authClient.useSession();
 
-    const isLoading = isPending;
-    const session = data?.session
+  const isLoading = isPending;
+  const session = data?.session;
 
-    const user:AuthUser|null = data?.user ? {
-        id:data?.user.id,
-        name:data?.user.name,
-        email:data?.user.email,
-        image:data?.user?.image
-    }: null
+  const user: AuthUser | null = data?.user
+    ? {
+        id: data?.user.id,
+        name: data?.user.name,
+        email: data?.user.email,
+        image: data?.user?.image,
+      }
+    : null;
 
-    const token = session?.token!
+  const token = session?.token!;
 
   const signIn = async (
     email: string,
@@ -58,6 +59,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         email,
         password,
       });
+
+      console.log("Sign in response:", { data, error });
 
       if (error) {
         return error.message ?? "Sign in failed";
@@ -70,7 +73,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signUp = async (
-    name:string,
+    name: string,
     email: string,
     password: string,
   ): Promise<string | null> => {
@@ -80,6 +83,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         email,
         password,
       });
+
+      console.log("Sign up response:", { data, error });
 
       if (error) {
         return error.message ?? "Sign up failed";
@@ -91,14 +96,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const signOut = async()=>{
-    await authClient.signOut()
-  }
+  const signOut = async () => {
+    await authClient.signOut();
+  };
 
-  return(<AuthContext.Provider value={{user , token , isLoading , signIn , signUp , signOut}}>
-    {children}
-  </AuthContext.Provider>)
+  return (
+    <AuthContext.Provider
+      value={{ user, token, isLoading, signIn, signUp, signOut }}
+    >
+      {children}
+    </AuthContext.Provider>
+  );
 }
 
-
-export const useAuth = ()=>useContext(AuthContext)
+export const useAuth = () => useContext(AuthContext);
