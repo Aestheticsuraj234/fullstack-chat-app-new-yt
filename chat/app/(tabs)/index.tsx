@@ -1,25 +1,53 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native'
-import React from 'react'
-import { Link } from 'expo-router';
+import { ActivityIndicator, FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native'
+import React, { useCallback, useState } from 'react'
+import { Link, useFocusEffect } from 'expo-router';
 import { authClient } from '@/utils/auth-client';
 import { useAuth } from '@/contexts/auth-context';
+import { useConversation } from '@/hooks/useChatQueries';
+import ChatListItem from '@/components/ChatListItem';
 
 const HomeScreen = () => {
-
-  const pingBackend = async()=>{
-    const res = await fetch("http://192.168.1.40:3000");
-    const data = await res.text();
-    console.log(data)
-  }
-  const {signOut} = useAuth()
+const {data:conversations=[] , isLoading , refetch} = useConversation()
+  const [refreshing, setRefreshing] = useState(false);
  
 
-  return (
-    <View>
-      <Pressable onPress={()=>signOut()}>
-       <Text>Sign out</Text>
-      </Pressable>
+useFocusEffect(
+  useCallback(()=>{
+    refetch()
+  },[refetch])
+)
 
+if(isLoading && !conversations.length){
+  return (
+    <View style={styles.loadingContainer}>
+      <ActivityIndicator size={"large"} color={"#0074ff"}/>
+    </View>
+  )
+}
+
+const onRefresh=async()=>{
+  setRefreshing(true);
+  await refetch();
+  setRefreshing(false)
+}
+
+  return (
+    <View style={styles.container}>
+    <Text style={styles.header}>Chats</Text>
+    <FlatList
+    data={conversations}
+    keyExtractor={(item)=>item.id}
+    renderItem={({item})=><ChatListItem user={item}/>}
+    refreshControl={
+      <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={"#fff"}/>
+    }
+    ListEmptyComponent={
+      <View style={styles.emptyContainer}>
+        <Text style={styles.emptyText}>No Chats Yet.</Text>
+         <Text style={styles.emptySubText}>Go to Discover to find friends!</Text>
+      </View>
+    }
+    />
     </View>
   )
 }
@@ -27,10 +55,37 @@ const HomeScreen = () => {
 export default HomeScreen
 
 const styles = StyleSheet.create({
-  btn:{
-    backgroundColor:"black",
-    color:"white",
-    borderRadius:10,
-    padding:5
-  }
-})
+  container: {
+    flex: 1,
+    backgroundColor: "#121212",
+    paddingTop: 40,
+  },
+  loadingContainer: {
+    flex: 1,
+    backgroundColor: "#121212",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  header: {
+    fontSize: 30,
+    fontWeight: "bold",
+    color: "#fff",
+    paddingHorizontal: 16,
+    paddingBottom: 10,
+  },
+  emptyContainer: {
+    padding: 20,
+    alignItems: "center",
+    marginTop: 50,
+  },
+  emptyText: {
+    color: "#fff",
+    fontSize: 18,
+    fontWeight: "600",
+  },
+  emptySubText: {
+    color: "#888",
+    fontSize: 14,
+    marginTop: 8,
+  },
+});

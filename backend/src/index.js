@@ -4,6 +4,7 @@ import { toNodeHandler } from "better-auth/node";
 import {auth} from "./lib/auth.js"
 import { friendRouter } from "./modules/friend/friend.routes.js";
 import { chatRouter } from "./modules/chat/chat.routes.js";
+import { userRouter } from "./modules/user/user.routes.js";
 
 const app = express()
 
@@ -16,6 +17,7 @@ app.use(express.json());
 
 app.use("/api/friend" , friendRouter)
 app.use("/api/chat" , chatRouter)
+app.use("/api/user" , userRouter)
 
 app.get("/" , (req , res)=>{
     res.send("Hello World from Backend!")
