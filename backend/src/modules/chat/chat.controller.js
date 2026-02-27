@@ -7,7 +7,11 @@ export async function send(req , res) {
 
         const result = await sendMessage(senderId , receiverId , content);
 
-        // TODO: WEBSOCKET , NOTIFICATION 
+      const {io} = await import("../../index.js");
+
+      const conversationId = [senderId , receiverId].sort().join("-");
+
+      io.to(conversationId).emit("new_message" , result)
 
         return res.json(result);
     } catch (error) {

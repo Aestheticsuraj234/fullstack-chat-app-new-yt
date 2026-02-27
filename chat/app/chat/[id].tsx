@@ -21,6 +21,7 @@ import { useAuth } from "@/contexts/auth-context";
 import { chatService, Message } from "@/services/chat.service";
 import { Ionicons } from "@expo/vector-icons";
 import { userService } from "@/services/user.service";
+import { useSocket } from "@/contexts/socket-context";
 
 interface User {
   id: string;
@@ -45,6 +46,8 @@ const ChatScreen = () => {
 
   const flatListRef = useRef<FlatList>(null);
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const { socket, setUnreadMessages, setPendingFriendRequests } = useSocket();
 
   useEffect(() => {
     if (!otherUserId) return;
@@ -73,6 +76,67 @@ const ChatScreen = () => {
     loadData();
   }, [otherUserId]);
 
+  useEffect(() => {
+    if (!socket || !user || !otherUserId) return;
+
+    const conversationId = [user.id, otherUserId].sort().join("-");
+    socket.emit("join", conversationId);
+
+    socket.emit(
+      "check_online",
+      otherUserId,
+      (response: { userId: string; isOnline: boolean }) => {
+        setIsOtherUserOnline(response.isOnline);
+      },
+    );
+
+    const onUserOnline = (data: { userId: string }) => {
+      if (data.userId === otherUserId) {
+        setIsOtherUserOnline(true);
+      }
+    };
+
+    const onUserOffline = (data: { userId: string }) => {
+      if (data.userId === otherUserId) {
+        setIsOtherUserOnline(false);
+      }
+    };
+
+    const onUserTyping = (data: { userId: string; isTyping: boolean }) => {
+      if (data.userId === otherUserId) {
+        setIsOtherUserTyping(data.isTyping);
+      }
+    };
+
+    const onNewMessage = (message: Message) => {
+      setMessages((prev) => {
+       
+        const exists = prev.some((m) => m.id === message.id);
+        if (exists) return prev;
+
+       
+        return [...prev, message];
+      });
+
+      setTimeout(() => {
+        flatListRef.current?.scrollToEnd({ animated: true });
+      }, 100);
+    };
+
+    socket.on("new_message", onNewMessage);
+    socket.on("user_online", onUserOnline);
+    socket.on("user_typing", onUserTyping);
+    socket.on("user_offline", onUserOffline);
+
+    return () => {
+      socket.emit("leave", conversationId);
+      socket.off("new_message", onNewMessage);
+      socket.off("user_online", onUserOnline);
+      socket.off("user_typing", onUserTyping);
+      socket.off("user_offline", onUserOffline);
+    };
+  }, [socket, user, otherUserId]);
+
   if (isLoading) {
     return (
       <View style={styles.loadingContainer}>
@@ -82,39 +146,59 @@ const ChatScreen = () => {
     );
   }
 
-  const handleSend =  async()=>{
-    if(!inputText || !otherUserId || isSending) return;
+  const handleSend = async () => {
+    if (!inputText || !otherUserId || isSending) return;
 
     const messageText = inputText.trim();
-    setInputText("")
-    setIsSending(true)
-    // TODO: STOP TYPING INDICATOR
+    setInputText("");
+    setIsSending(true);
+
+    if (socket && user) {
+      const conversationId = [user.id, otherUserId].sort().join("-");
+      socket.emit("typing", { conversationId, isTyping: false });
+    }
+
     try {
-      const newMessage = await chatService.sendMessage(otherUserId , messageText);
-      setMessages((prev)=>{
-        const exists = prev.some((m)=>m.id === newMessage.id)
-        if(exists) return prev;
-        return [
-          ...prev,
-          newMessage
-        ]
+      const newMessage = await chatService.sendMessage(
+        otherUserId,
+        messageText,
+      );
+      setMessages((prev) => {
+        const exists = prev.some((m) => m.id === newMessage.id);
+        if (exists) return prev;
+        return [...prev, newMessage];
       });
 
-      
       setTimeout(() => {
         flatListRef.current?.scrollToEnd({ animated: true });
       }, 100);
     } catch (error) {
-          console.error("Failed to send message:", error);
+      console.error("Failed to send message:", error);
       setInputText(messageText); // Restore text on error
+    } finally {
+      setIsSending(false);
     }
-    finally{
-      setIsSending(false)
-    }
-  }
+  };
 
   const handleTextChange = (text: string) => {
     setInputText(text);
+
+    if (!socket || !user) return;
+
+    const conversationId = [user.id, otherUserId].sort().join("-");
+
+    if (text.trim()) {
+      socket.emit("typing", { conversationId, isTyping: true });
+
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+      typingTimeoutRef.current = setTimeout(() => {
+        socket.emit("typing", { conversationId, isTyping: false });
+      }, 1000);
+    } else {
+      socket.emit("typing", { conversationId, isTyping: false });
+    }
   };
 
   const renderMessage = ({ item }: { item: Message }) => {
@@ -175,6 +259,13 @@ const ChatScreen = () => {
                 <Text style={styles.headerName} numberOfLines={1}>
                   {otherUser?.name || "Loading..."}
                 </Text>
+                {isOtherUserTyping ? (
+                  <Text style={styles.headerStatus}>typing...</Text>
+                ) : isOtherUserOnline ? (
+                  <Text style={styles.headerStatusOnline}>online</Text>
+                ) : (
+                  <Text style={styles.headerStatus}>offline</Text>
+                )}
               </View>
             </View>
           ),
