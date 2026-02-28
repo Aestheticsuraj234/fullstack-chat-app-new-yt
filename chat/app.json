@@ -19,7 +19,9 @@
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "dev.expo.chat",
+       "googleServicesFile": "google-services.json"
     },
     "web": {
       "output": "static",
@@ -39,11 +41,21 @@
           }
         }
       ],
-      "expo-secure-store"
+      "expo-secure-store",
+      [
+        "expo-notifications"
+      ]
     ],
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "463619ad-869b-4706-8883-062e766a7c3f"
+      }
+    },
+    "owner": "codebysuraj"
   }
 }

@@ -1,4 +1,7 @@
+import { sendNewMessageNotification } from "../../lib/push-notification.js";
+import { isUserOnline } from "../../lib/socket.js";
 import { getConversation, getMessages, markMessagesAsRead, sendMessage } from "./chat.service.js";
+import { prisma } from "../../lib/db.js";
 
 export async function send(req , res) {
     try {
@@ -12,6 +15,30 @@ export async function send(req , res) {
       const conversationId = [senderId , receiverId].sort().join("-");
 
       io.to(conversationId).emit("new_message" , result)
+
+       io.to(receiverId).emit("notification:new_message", result);
+    io.to(senderId).emit("notification:new_message", result);
+
+    if(!isUserOnline(receiverId) && receiverId !== senderId){
+        const receiver = await prisma.user.findUnique({
+        where: { id: receiverId },
+        select: { pushToken: true },
+      });
+
+      if(receiver?.pushToken){
+           const senderName = req.user.name || req.user.username || "Someone";
+        const truncatedContent =
+          content.length > 50 ? content.substring(0, 50) + "..." : content;
+
+          sendNewMessageNotification(
+             receiver.pushToken,
+          senderName,
+          truncatedContent,
+          req.user.avatar || req.user.profilePicture || null,
+          senderId
+          ).catch((err)=>console.error("Push notification failed" , err))
+      }
+    }
 
         return res.json(result);
     } catch (error) {

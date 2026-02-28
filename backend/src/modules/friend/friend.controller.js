@@ -6,14 +6,33 @@ import {
   rejectFriendRequest,
   sendFriendRequest,
 } from "./friend.service.js";
-
+import {io} from "../../index.js"
+import { prisma } from "../../lib/db.js";
+import { sendFriendRequestNotification } from "../../lib/push-notification.js";
 export async function sendRequest(req, res) {
   try {
     const senderId = req.user.id;
     const { receiverId } = req.body;
 
     const result = await sendFriendRequest(senderId, receiverId);
-    // TODO: IMPLEMENT PUSH NOTIFICATION LATER
+    
+    io.to(receiverId).emit("friend_request_received" , result);
+
+    const receiver = await prisma.user.findUnique({
+      where:{id:receiverId},
+      select:{
+        pushToken:true
+      }
+    })
+
+    if(receiver.pushToken){
+      await sendFriendRequestNotification(
+         receiver.pushToken,
+        req.user.name || req.user.username || "Someone",
+        req.user.avatar || req.user.profilePicture || null,
+        result.id
+      )
+    }
 
     return res.json(result);
   } catch (error) {

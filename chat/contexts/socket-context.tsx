@@ -68,6 +68,18 @@ export const SocketProvider = ({children}:{children:React.ReactNode})=>{
             setIsConnected(false);
         });
 
+          // Listen for real-time updates
+        newSocket.on("notification:new_message", (message) => {
+            // Only increment if we are not in the chat with this person? 
+            // Actually, the global count should probably increment, and the chat screen should 
+            // handle marking it as read if it's open.
+            setUnreadMessages((prev) => prev + 1);
+        });
+
+        newSocket.on("friend_request_received", () => {
+            setPendingFriendRequests((prev) => prev + 1);
+        });
+
 
         setSocket(newSocket);
 
