@@ -1,59 +1,107 @@
-Build a Full-Stack Real-Time Chat App from Scratch | React Native + Node.js + Socket.io + Prisma
+# Full-Stack Real-Time Chat App
 
-In this full-stack series, we build a complete real-time chat application for mobile using React Native (Expo) on the frontend and Node.js + Express on the backend — with live messaging powered by Socket.io, a PostgreSQL database managed with Prisma ORM, and authentication handled by Better Auth.
+A complete, production-ready real-time mobile chat application built with React Native (Expo), Node.js, Socket.io, and Prisma.
 
-🚀 What We Build:
-A production-ready mobile chat app where users can sign up, discover people, manage friends, and chat with them in real time — all with push notifications and live presence indicators.
+## 🚀 Features
 
-✅ Key Features:
-🔐 Authentication
+### 🔐 Authentication
+*   **Email/Password Sign Up & Sign In**: Powered by Better Auth.
+*   **Secure Sessions**: Persistent, secure session management using cookies and Expo SecureStore.
+*   **Protected Routes**: Auth-based navigation handled cleanly via Expo Router.
 
-Email & password Sign Up / Sign In with Better Auth
-Secure session management using cookies and Expo SecureStore
-Protected routes with auth-based navigation using Expo Router
-👥 Friend System
+### 👥 Friend System
+*   **Discover People**: Search for other users by name or email.
+*   **Manage Requests**: Send, accept, reject, and cancel friend requests seamlessly.
+*   **Real-Time Notifications**: Instant updates via Socket.io when receiving a friend request.
+*   **Friends List**: View all your accepted friends on your dedicated Profile screen.
 
-Discover and search other users by name or email
-Send, accept, reject, and cancel friend requests
-Real-time friend request notifications via Socket.io
-View full friends list on the Profile screen
-💬 Real-Time Messaging
+### 💬 Real-Time Messaging (Socket.io)
+*   **Instant Chat**: Send and receive messages in real time with accepted friends.
+*   **Paginated History**: Cursor-based pagination logic fetching messages in 50-item chunks.
+*   **Organized Conversations**: Chat list sorted by the latest activity with auto-updating unread badges.
+*   **Persistent Storage**: All messages safely stored in PostgreSQL via Prisma.
 
-Send and receive messages instantly using Socket.io
-Friend-only messaging (can only chat with accepted friends)
-Paginated message history (cursor-based pagination) with 50-message chunks
-Conversation list sorted by latest message with unread message count badges
-Messages persist in PostgreSQL via Prisma
-🟢 Online Presence & Typing Indicators
+### 🟢 Live Presence & Status
+*   **Online/Offline Indicators**: See exactly when your friends are currently active.
+*   **Typing Indicators**: Live "typing..." feedback when your partner is composing a message.
 
-See who is online/offline in real time
-Live "typing..." indicator when the other user is composing a message
-🔔 Push Notifications (Expo Notifications)
+### 🔔 Push Notifications
+*   **New Friend Requests**: Rich push notifications containing the sender's name and avatar.
+*   **New Messages**: Real-time push alerts showing the sender and message preview.
+*   **Interactive Notifications**: Accept or reject friend requests directly from the notification banner.
+*   **Custom In-App Banner**: Smooth, animated custom notification banners with swipe-to-dismiss functionality.
 
-Push notifications for new friend requests (with sender name & avatar)
-Push notifications for new messages (with sender and content preview)
-Interactive notification categories (accept/reject friend request directly from the notification)
-Custom in-app notification banner with animations and swipe-to-dismiss gesture
-📱 Mobile UI (React Native + Expo)
+### 📱 UI / UX
+*   **Modern Mobile Interface**: Built with React Native and Expo featuring a cohesive dark mode theme.
+*   **Tab Navigation**: Intuitive bottom tab layout: **Chats**, **Discover**, and **Profile**.
+*   **Avatars**: Auto-generated user avatars configured via DiceBear.
+*   **Responsive Input**: Keyboard-avoiding text inputs with full safe area inset support.
+*   **Pull to Refresh**: Easily refresh your conversation lists.
 
-Bottom tab navigation: Chats, Discover, Profile
-Dark-themed UI throughout the app
-DiceBear auto-generated avatars for every user
-Pull-to-refresh on the chat list
-Keyboard-avoiding input with safe area support
-🛠️ Backend (Node.js + Express + Prisma)
+## 🛠 Tech Stack
 
-RESTful API with modular routes: Auth, Chat, Friend, User
-PostgreSQL database with full relational schema (Users, Messages, Friends, FriendRequests, Sessions)
-Socket.io server with session-based auth middleware
-Expo push notification server using expo-server-sdk
-⚡ State Management
+*   **Frontend**: React Native, Expo, TypeScript, Expo Router, Expo SecureStore, Expo Notifications.
+*   **State Management**: TanStack Query (React Query) for server state handling and optimistic updates.
+*   **Backend**: Node.js, Express, TypeScript.
+*   **Real-Time Engine**: Socket.io.
+*   **Database & ORM**: PostgreSQL, Prisma.
+*   **Authentication**: Better Auth.
 
-TanStack Query (React Query) for server state — friend lists, conversations, user discovery
-Optimistic UI updates and query invalidation
-Global Socket context for real-time shared state
-Tech Stack: React Native · Expo · TypeScript · Node.js · Express · Socket.io · Prisma ORM · PostgreSQL · Better Auth · TanStack Query · Expo Notifications · Expo Router · Expo SecureStore
+## ⚙️ Project Structure
 
-💡 Perfect for developers who want to learn how to go from zero to a production-level real-time mobile chat app using modern tools!
+The repository is divided into two primary directories:
+*   `/chat`: The React Native (Expo) frontend mobile application.
+*   `/backend`: The Node.js (Express + Prisma) backend server.
 
-📌 If you found this helpful, don't forget to like, subscribe, and hit the bell icon! 💬 Drop your questions in the comments below — I read every one!
+## 🏁 Getting Started
+
+### Prerequisites
+*   Node.js installed on your machine.
+*   A running PostgreSQL database instance.
+*   Expo Go app on your physical device, or an iOS Simulator/Android Emulator.
+
+### 1. Backend Setup
+
+1.  Navigate to the backend directory:
+    ```bash
+    cd backend
+    ```
+2.  Install dependencies:
+    ```bash
+    npm install
+    ```
+3.  Set up environment variables. Create a `.env` file in the root of the `/backend` directory:
+    ```env
+    DATABASE_URL="postgresql://user:password@localhost:5432/your_db_name"
+    BETTER_AUTH_SECRET="your_secure_secret_string"
+    ```
+4.  Run Prisma migrations to set up your database schema:
+    ```bash
+    npx prisma migrate dev
+    ```
+5.  Start the development server:
+    ```bash
+    npm run dev
+    ```
+
+### 2. Frontend Setup
+
+1.  Navigate to the chat directory:
+    ```bash
+    cd chat
+    ```
+2.  Install dependencies:
+    ```bash
+    npm install
+    ```
+3.  Configure API & Socket URLs.
+    *Open `/chat/utils/index.ts` (or wherever your `SOCKET_URL` and `API_URL` are defined) and ensure they point to your local machine's IP address where the backend is running.*
+4.  Start the Expo development server:
+    ```bash
+    npm run start
+    ```
+5.  Scan the QR code with the Expo Go app or press `i`/`a` to launch on the simulator/emulator.
+
+## 📄 License
+
+This project is licensed under the MIT License.
